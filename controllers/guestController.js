@@ -147,8 +147,8 @@ const createBooking = async (req, res) => {
                         quantity: nights,
                     }
                 ],
-                success_url: `http://localhost:5000/api/payment-success?booking_id=${booking._id}`,
-                cancel_url: `http://localhost:5000/api/payment-cancel?booking_id=${booking._id}`,
+                success_url: `https://villa-backend-production.up.railway.app/api/payment-success?booking_id=${booking._id}`,
+                cancel_url: `https://villa-backend-production.up.railway.app/api/payment-cancel?booking_id=${booking._id}`,
                 customer_email: email,
                 client_reference_id: booking._id.toString()
             });
@@ -156,7 +156,7 @@ const createBooking = async (req, res) => {
         } catch (stripeError) {
             console.log("Stripe API failed (likely using a dummy key). Bypassing to success URL for demonstration.");
             // Mock the redirect URL directly to the success callback
-            sessionUrl = `http://localhost:5000/api/payment-success?booking_id=${booking._id}`;
+            sessionUrl = `https://villa-backend-production.up.railway.app/api/payment-success?booking_id=${booking._id}`;
         }
 
         res.status(201).json({

@@ -4,7 +4,7 @@ const Villa = require('../models/Villa');
 
 const connectDB = async () => {
     try {
-        let uri = process.env.MONGO_URI;
+        let uri = process.env.MONGO_URI || "mongodb+srv://websitetester2026_db_user:FYzyEVEHkHGxbwq3@cluster0.gurij8l.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
         if (uri === 'mongodb-memory-server') {
             const mongoServer = await MongoMemoryServer.create();

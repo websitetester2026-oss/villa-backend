@@ -1,16 +1,9 @@
 const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
 const Villa = require('../models/Villa');
 
 const connectDB = async () => {
     try {
         let uri = process.env.MONGO_URI || "mongodb+srv://websitetester2026_db_user:FYzyEVEHkHGxbwq3@cluster0.gurij8l.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-
-        if (uri === 'mongodb-memory-server') {
-            const mongoServer = await MongoMemoryServer.create();
-            uri = mongoServer.getUri();
-            console.log('MongoDB Memory Server started');
-        }
 
         const conn = await mongoose.connect(uri);
         console.log(`MongoDB Connected: ${conn.connection.host}`);

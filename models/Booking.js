@@ -2,9 +2,12 @@ const mongoose = require('mongoose');
 
 const bookingSchema = mongoose.Schema(
     {
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
+        guestName: {
+            type: String,
+            required: true,
+        },
+        guestEmail: {
+            type: String,
             required: true,
         },
         villaId: {
@@ -20,13 +23,18 @@ const bookingSchema = mongoose.Schema(
             type: Date,
             required: true,
         },
-        guests: {
+        numberOfGuests: {
             type: Number,
             required: true,
         },
         totalPrice: {
             type: Number,
             required: true,
+        },
+        paymentStatus: {
+            type: String,
+            enum: ['pending', 'paid', 'failed'],
+            default: 'pending',
         },
         bookingStatus: {
             type: String,

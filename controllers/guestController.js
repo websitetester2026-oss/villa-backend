@@ -26,6 +26,28 @@ const getBookings = async (req, res) => {
     }
 };
 
+// @desc    Get booked dates for a specific villa
+// @route   GET /api/booked-dates
+// @access  Public
+const getBookedDates = async (req, res) => {
+    const { villaId } = req.query;
+    
+    if (!villaId) {
+        return res.status(400).json({ message: 'Please provide villaId' });
+    }
+
+    try {
+        const bookings = await Booking.find({
+            villaId,
+            bookingStatus: { $ne: 'cancelled' }
+        }).select('checkIn checkOut -_id');
+
+        res.json(bookings);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error fetching booked dates' });
+    }
+};
+
 // @desc    Check availability for a villa
 // @route   GET /api/availability
 // @access  Public
@@ -45,7 +67,7 @@ const checkAvailability = async (req, res) => {
         // Existing CheckIn < Requested CheckOut AND Existing CheckOut > Requested CheckIn
         const overlappingBookings = await Booking.find({
             villaId,
-            status: { $ne: 'cancelled' },
+            bookingStatus: { $ne: 'cancelled' },
             $and: [
                 { checkIn: { $lt: requestedCheckOut } },
                 { checkOut: { $gt: requestedCheckIn } }
@@ -53,7 +75,7 @@ const checkAvailability = async (req, res) => {
         });
 
         if (overlappingBookings.length > 0) {
-            return res.json({ available: false, message: 'Dates are not available' });
+            return res.json({ available: false, message: 'Selected dates are no longer available.' });
         }
 
         res.json({ available: true, message: 'Dates are available' });
@@ -94,7 +116,7 @@ const createBooking = async (req, res) => {
         // Double check availability before booking
         const overlappingBookings = await Booking.find({
              villaId,
-             status: { $ne: 'cancelled' },
+             bookingStatus: { $ne: 'cancelled' },
              $and: [
                  { checkIn: { $lt: requestedCheckOut } },
                  { checkOut: { $gt: requestedCheckIn } }
@@ -102,28 +124,18 @@ const createBooking = async (req, res) => {
          });
  
          if (overlappingBookings.length > 0) {
-             return res.status(400).json({ message: 'Villa is already booked for these dates' });
+             return res.status(400).json({ message: 'Selected dates are no longer available.' });
          }
 
-        // For simplicity in a guest booking flow, we will find or create a minimal User record for the guest
-        const User = require('../models/User'); // inline require to avoid circular deps if any but typically it's fine at top
-        let user = await User.findOne({ email });
-        
-        if (!user) {
-            user = await User.create({
-                name,
-                email,
-                role: 'guest'
-            });
-        }
-
         const booking = await Booking.create({
-            userId: user._id,
+            guestName: name,
+            guestEmail: email,
             villaId,
             checkIn: requestedCheckIn,
             checkOut: requestedCheckOut,
-            guests,
+            numberOfGuests: guests,
             totalPrice,
+            paymentStatus: 'pending',
             bookingStatus: 'pending' // Default status
         });
 
@@ -180,7 +192,7 @@ const paymentSuccess = async (req, res) => {
         try {
             // In a real app with webhooks, we'd verify the stripe signature. 
             // For now, assume success means paid.
-            await Booking.findByIdAndUpdate(booking_id, { bookingStatus: 'approved' });
+            await Booking.findByIdAndUpdate(booking_id, { paymentStatus: 'paid', bookingStatus: 'approved' });
         } catch (error) {
             console.error(error);
         }
@@ -215,6 +227,7 @@ const paymentCancel = async (req, res) => {
 module.exports = {
     getVillas,
     getBookings,
+    getBookedDates,
     checkAvailability,
     createBooking,
     paymentSuccess,

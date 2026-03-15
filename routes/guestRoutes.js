@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { getVillas, getBookings, checkAvailability, createBooking, paymentSuccess, paymentCancel } = require('../controllers/guestController');
+const { getVillas, getBookings, getBookedDates, checkAvailability, createBooking, paymentSuccess, paymentCancel } = require('../controllers/guestController');
 
 router.get('/villas', getVillas);
 router.get('/bookings', getBookings);
+router.get('/booked-dates', getBookedDates);
 router.get('/availability', checkAvailability);
 router.post('/bookings', createBooking);
 router.get('/payment-success', paymentSuccess);
